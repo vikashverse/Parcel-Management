@@ -148,8 +148,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 Developed with ❤️ by **Vikash** (TCS ILP Project)  
 *For inquiries, please reach out via the application's Support page or open an issue in this repository.*
 ```
-
-### 💡 Tips before pushing to Git:
-1. **Replace Placeholders**: Update `your-username` in the clone URL and add your actual name/contact info at the bottom.
-2. **Add Screenshots**: If you have screenshots of the app running, add them under the `📸 Application Screenshots` section using `![Alt text](path/to/image.png)` to make the README highly engaging.
-3. **Add a LICENSE file**: If you don't have one, create a simple `LICENSE` file in the root directory with the MIT license text to match the badge.
