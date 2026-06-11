@@ -1,0 +1,390 @@
+/* booking.css — ShipZen Parcel Booking Page */
+
+body {
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #f5e6c5, #d89c2b);
+    margin: 0;
+    min-height: 100vh;
+    padding-top: 70px; /* SAME AS TRACKING PAGE */
+}
+
+.SR {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.s {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+.r {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+
+
+.booking-container {
+    width: 85% !important;
+    max-width: 1200px;
+    margin: 2rem auto;
+}
+
+.booking-container {
+    background: #fff8e6;
+    padding: 35px 45px;
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    
+    overflow: visible;
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+/* GRID LAYOUT */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-top: 20px;
+}
+
+:root {
+    --primary: #c68642;
+    --primary-dark: #a86e30;
+    --accent: #f4c430;
+    --accent-dark: #d4a820;
+    --dark: #1f2937;
+    --cream: #fdf6e9;
+    --card-bg: #ffffff;
+    --text-muted: #6b7280;
+    --shadow-warm: rgba(198, 134, 66, 0.2);
+}
+
+/* ── NAVBAR ─────────────────────────────── */
+
+
+.navbar-custom {
+  background: linear-gradient(90deg, #b5722e 0%, var(--primary) 55%, #d4943a 100%);
+  min-height: 70px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.2);
+}
+
+.navbar-brand {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #fff !important;
+  letter-spacing: -0.5px;
+}
+
+.navbar-brand span {
+  color: var(--accent);
+}
+
+.navbar-custom .nav-link {
+  color: rgba(255,255,255,0.95) !important;
+  font-weight: 600;
+  font-size: 0.93rem;
+  border-radius: 7px;
+  padding: 0.42rem 0.95rem;
+  transition: background-color 0.2s, color 0.2s;
+  display: inline-block;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link.active {
+  background-color: rgba(255,255,255,0.18);
+  color: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+.user-panel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.welcome-text {
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.welcome-text strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  color: #fff !important;
+  font-size: 1.2rem;
+  text-decoration: none;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  transition: background 0.2s, transform 0.15s, border-color 0.2s;
+}
+
+.btn-logout:hover {
+  background: rgba(244,196,48,0.25);
+  border-color: var(--accent);
+  color: var(--accent) !important;
+  transform: translateX(2px);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    margin-right: 0;
+    padding: 5px;
+}
+
+/* Section Titles */
+.full {
+    grid-column: span 3;
+    color: #b87400;
+    margin: 1px 5px 1px 0px;
+    font-size: 1.2em;
+}
+
+/* Inputs — scoped to .form-grid only so Bootstrap form controls are NOT affected */
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    background: white;
+    transition: 0.3s;
+    font-size: 0.9rem;
+}
+
+.form-grid textarea {
+    height: auto;
+    min-height: 80px;
+    resize: vertical;
+}
+
+
+/* Focus */
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #d89c2b;
+    box-shadow: 0 0 5px rgba(216, 156, 43, 0.5);
+    outline: none;
+}
+
+
+/* Error */
+
+.error {
+
+    color: red;
+
+    font-size: 12px;
+
+}
+
+
+/* Cost Field */
+
+#cost {
+
+    background: #eeede9;
+
+    font-weight: bold;
+
+    color: #b87400;
+
+}
+
+
+/* Headings */
+
+h2 {
+
+    text-align: center;
+
+    color: #b87400;
+
+    margin-top: 10px;
+
+    margin-bottom: 10px;
+
+}
+
+
+h3 {
+    color: #b87400;
+    border-bottom: 2px solid #f0c36d;
+    padding-bottom: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+
+.form-grid label {
+    font-size: 0.8em;
+    align-content: center;
+}
+
+
+.footer {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 35px;
+    margin-bottom: 10px;
+}
+
+.footer>button {
+    width: 220px;
+    margin-left: 0;
+    border-radius: 6px;
+    font-size: 0.9em;
+    border-radius: 6px;
+}
+
+.full {
+
+    grid-column: span 3;
+
+}
+
+/* input,
+select,
+textarea {
+    
+width: 90%;
+
+min-width: 0;
+
+} */
+
+@media (max-width: 992px) {
+
+    .form-grid {
+
+        grid-template-columns: repeat(2, 1fr);
+        display: grid;
+    }
+
+    /* .container {
+        margin: 20px auto;
+        padding: 15px;
+        min-width: 20vb;
+
+    } */
+    h2 {
+        font-size: 1.4em;
+    }
+
+    .full {
+        grid-column: span 2;
+        font-size: 1.2em;
+    }
+
+}
+
+@media(max-width:825px) {
+    .form-grid {
+        display: block;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .full {
+
+        grid-column: span 1;
+        font-size: 1em;
+
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-container {
+        max-width: 80%;
+    }
+
+
+
+
+    textarea,
+    input,
+    select {
+
+        height: 40px;
+
+
+        width: 100%;
+
+    }
+
+    textarea {
+        height: 40px;
+    }
+
+    h2 {
+        font-size: 1.2em;
+    }
+
+    .nav {
+        gap: 2%;
+        max-height: 5em;
+    }
+
+    .s input,
+    textarea {
+        width: 5em;
+    }
+
+    .r input,
+    textarea {
+        width: 5em;
+    }
+}
+
+/* Frozen Style for Disabled Inputs */
+.form-control:disabled, 
+.form-select:disabled {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    border: 1px dashed #dee2e6 !important;
+    opacity: 0.8;
+    box-shadow: none !important;
+    background-image: linear-gradient(45deg, rgba(0,0,0,0.02) 25%, transparent 25%, transparent 50%, rgba(0,0,0,0.02) 50%, rgba(0,0,0,0.02) 75%, transparent 75%, transparent) !important;
+    background-size: 10px 10px !important;
+}
+
+.form-label-disabled {
+    color: #adb5bd !important;
+    font-style: italic;
+}
+
+/* HARD ALIGN NAVBAR (NO JUMP, NO REPAINT) */
+.navbar-custom,
+.navbar-custom * {
+  transition: none !important;
+}

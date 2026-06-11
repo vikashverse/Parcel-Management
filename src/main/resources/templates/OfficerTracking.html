@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tracking | ShipZen Officer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/OfficerTracking_CSS.css}"/>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" th:href="@{/officer/home}">Ship<span>Zen</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#officerNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center" id="officerNav">
+            <ul class="navbar-nav gap-lg-2">
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/home}">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" th:href="@{/officer/tracking}">Tracking</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/delivery-update}">Delivery Status</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/pickup-scheduling}">Pickup Scheduling</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/history}">Previous Booking</a></li>
+            </ul>
+        </div>
+        <div class="user-panel">
+            <span class="welcome-text">Welcome, <strong th:text="${session.username}">Officer</strong></span>
+            <a th:href="@{/logout}" class="btn-logout" title="Logout"><i class="bi bi-box-arrow-right"></i></a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-body">
+    <div class="container-fluid px-4">
+
+        <!-- Header + Stats -->
+        <div class="page-header">
+            <div>
+                <h2 class="page-title"><i class="bi bi-geo-alt-fill me-2"></i>Parcel Tracking</h2>
+                <p class="page-sub">All customer bookings — search, filter, and update status.</p>
+            </div>
+            <div class="header-stats">
+                <div class="stat-chip">
+                    <span class="stat-num" th:text="${totalCount}">0</span>
+                    <span class="stat-label">Total</span>
+                </div>
+                <div class="stat-chip transit">
+                    <span class="stat-num" th:text="${transitCount}">0</span>
+                    <span class="stat-label">In Transit</span>
+                </div>
+                <div class="stat-chip delivered">
+                    <span class="stat-num" th:text="${deliveredCount}">0</span>
+                    <span class="stat-label">Delivered</span>
+                </div>
+                <div class="stat-chip pending">
+                    <span class="stat-num" th:text="${pendingCount}">0</span>
+                    <span class="stat-label">Pending</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search bar -->
+        <form th:action="@{/officer/tracking}" method="get" class="filter-bar">
+            <div class="filter-search">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" placeholder="Search by Booking ID, customer name…"
+                       th:value="${q}"/>
+            </div>
+            <div class="filter-group">
+                <button type="submit" class="btn-clear" style="background:var(--primary);color:#fff;border-color:var(--primary)">
+                    <i class="bi bi-search me-1"></i>Search
+                </button>
+                <a th:href="@{/officer/tracking}" class="btn-clear">
+                    <i class="bi bi-x-circle me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+
+        <!-- Table -->
+        <div class="table-card">
+            <table class="track-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Booking ID</th>
+                        <th>Customer</th>
+                        <th>Sender</th>
+                        <th>Receiver</th>
+                        <th>Destination</th>
+                        <th>Booked On</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Empty state -->
+                    <tr th:if="${bookings == null or bookings.isEmpty()}">
+                        <td colspan="9" class="empty-row">No bookings found.</td>
+                    </tr>
+                    <!-- Data rows -->
+                    <tr th:each="b, stat : ${bookings}">
+                        <td th:text="${stat.count}">1</td>
+                        <td class="booking-id" th:text="${b.bookingId}">—</td>
+                        <td th:text="${b.customerUserId}">—</td>
+                        <td th:text="${b.senderName}">—</td>
+                        <td th:text="${b.receiverName}">—</td>
+                        <td th:text="${b.receiverPincode}">—</td>
+                        <td th:text="${b.bookedAtFormatted}">—</td>
+                        <td>
+                            <span class="status-badge"
+                                  th:classappend="${b.status == 'Pending' ? 'badge-pending' :
+                                                   b.status == 'Picked Up' ? 'badge-pickup' :
+                                                   b.status == 'In Transit' ? 'badge-transit' :
+                                                   b.status == 'At Hub' ? 'badge-hub' :
+                                                   b.status == 'Out for Delivery' ? 'badge-transit' :
+                                                   b.status == 'Delivered' ? 'badge-delivered' : 'badge-returned'}"
+                                  th:text="${b.status}">—</span>
+                        </td>
+                        <td>
+                            <!-- Update status -->
+                            <a th:href="@{/officer/delivery-update(bookingId=${b.bookingId})}"
+                               class="btn-view" title="Update Status">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

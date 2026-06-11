@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Officer Booking History | ShipZen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/OfficerBookingHistory_CSS.css}"/>
+    <style>
+        .status.in-transit   { background:#fef3c7; color:#92400e; }
+        .status.picked-up    { background:#e0f2fe; color:#0369a1; }
+        .status.at-hub       { background:#ede9fe; color:#5b21b6; }
+        .status.out-delivery { background:#d1fae5; color:#065f46; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" th:href="@{/officer/home}">Ship<span>Zen</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#officerNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center" id="officerNav">
+            <ul class="navbar-nav gap-lg-2">
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/home}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/tracking}">Tracking</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/delivery-update}">Delivery Status</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/pickup-scheduling}">Pickup Scheduling</a></li>
+                <li class="nav-item"><a class="nav-link active" th:href="@{/officer/history}">Previous Booking</a></li>
+            </ul>
+        </div>
+        <div class="user-panel">
+            <span class="welcome-text">Welcome, <strong th:text="${session.username}">Officer</strong></span>
+            <a th:href="@{/logout}" class="btn-logout" title="Logout"><i class="bi bi-box-arrow-right"></i></a>
+        </div>
+    </div>
+</nav>
+
+<section class="history-wrapper">
+    <div class="container">
+        <div class="table-card">
+            <h2><i class="bi bi-clock-history me-2"></i>All Booking History</h2>
+
+            <!-- Search filter by Customer ID -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <input type="text" id="filterCid" class="form-control"
+                           placeholder="Filter by Customer ID…" oninput="filterAndRender()"/>
+                </div>
+                <div class="col-md-auto">
+                    <button class="btn btn-outline-secondary" onclick="clearFilter()">Clear</button>
+                </div>
+            </div>
+
+            <!-- Empty state -->
+            <div th:if="${bookings == null or bookings.isEmpty()}" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox" style="font-size:3rem;opacity:0.4"></i>
+                <p class="mt-3">No bookings in the system yet.</p>
+            </div>
+
+            <div th:if="${bookings != null and !bookings.isEmpty()}" class="table-responsive">
+                <table class="table booking-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Customer ID</th>
+                            <th>Booking ID</th>
+                            <th>Booking Date</th>
+                            <th>Receiver Name</th>
+                            <th>Delivered Address</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <tr th:each="b, stat : ${bookings}"
+                            th:attr="data-cid=${b.customerUserId}">
+                            <td class="row-num" th:text="${stat.count}">1</td>
+                            <td th:text="${b.customerUserId}">—</td>
+                            <td><strong th:text="${b.bookingId}">—</strong></td>
+                            <td th:text="${b.bookedAtFormatted}">—</td>
+                            <td th:text="${b.receiverName}">—</td>
+                            <td th:text="${b.receiverAddress}">—</td>
+                            <td th:text="'₹' + ${b.amount}">—</td>
+                            <td>
+                                <span class="status"
+                                      th:classappend="${b.status == 'Delivered'        ? 'delivered'    :
+                                                        b.status == 'Pending'          ? 'pending'      :
+                                                        b.status == 'Returned'         ? 'cancelled'    :
+                                                        b.status == 'In Transit'       ? 'in-transit'   :
+                                                        b.status == 'Picked Up'        ? 'picked-up'    :
+                                                        b.status == 'At Hub'           ? 'at-hub'       :
+                                                        b.status == 'Out for Delivery' ? 'out-delivery' : 'pending'}"
+                                      th:text="${b.status}">—</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/officer/delivery-update(bookingId=${b.bookingId})}"
+                                   class="btn btn-sm btn-outline-warning rounded-pill me-1" title="Update Status">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a th:href="@{/invoice/{id}(id=${b.bookingId})}"
+                                   class="btn btn-sm btn-outline-secondary rounded-pill" title="Invoice">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div th:if="${bookings != null and !bookings.isEmpty()}"
+                 class="pagination-wrapper">
+                <button id="prevBtn" disabled onclick="changePage(-1)">Previous</button>
+                <span id="pageInfo">Page 1</span>
+                <button id="nextBtn" onclick="changePage(1)">Next</button>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<script th:inline="none">
+    var ROWS = 6;
+    var page = 1;
+    var allRows = Array.from(document.querySelectorAll('#historyBody tr'));
+    var filtered = allRows.slice();
+
+    function filterAndRender() {
+        var q = document.getElementById('filterCid').value.trim().toLowerCase();
+        filtered = allRows.filter(function(r) {
+            if (!q) return true;
+            var cid = (r.getAttribute('data-cid') || '').toLowerCase();
+            return cid.includes(q);
+        });
+        page = 1;
+        renderPage();
+    }
+
+    function clearFilter() {
+        document.getElementById('filterCid').value = '';
+        filtered = allRows.slice();
+        page = 1;
+        renderPage();
+    }
+
+    function renderPage() {
+        var totalPages = Math.max(1, Math.ceil(filtered.length / ROWS));
+        // hide all first
+        allRows.forEach(function(r) { r.style.display = 'none'; });
+        // show current page of filtered
+        var start = (page - 1) * ROWS;
+        filtered.slice(start, start + ROWS).forEach(function(r, i) {
+            r.style.display = '';
+            // update # column
+            var numCell = r.querySelector('.row-num');
+            if (numCell) numCell.textContent = start + i + 1;
+        });
+        document.getElementById('pageInfo').textContent = 'Page ' + page + ' of ' + totalPages +
+            ' (' + filtered.length + ' records)';
+        document.getElementById('prevBtn').disabled = page === 1;
+        document.getElementById('nextBtn').disabled = page >= totalPages;
+    }
+
+    function changePage(dir) {
+        var totalPages = Math.ceil(filtered.length / ROWS);
+        page = Math.max(1, Math.min(page + dir, totalPages));
+        renderPage();
+    }
+
+    if (allRows.length > 0) renderPage();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

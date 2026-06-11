@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShipZen | Authentication</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --primary: #c68642;
+            --accent: #f4c430;
+            --text-dark: #1f2937;
+            --text-light: #4b5563;
+            --bg-light: #fdf6ec;
+            --bg-secondary: #f7efe5;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            background-color: var(--text-dark);
+        }
+        /* 50/50 SPLIT LAYOUT */
+        .split-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+        /* LEFT SIDE: BRANDING */
+        .left-panel {
+            width: 50%;
+            background: linear-gradient(135deg, var(--bg-light), var(--bg-secondary));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+        }
+        .logo {
+            width: 220px;
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(198, 134, 66, 0.2));
+            margin-bottom: 20px;
+        }       
+        .logo-img-auth {
+            width: 220px;
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(198, 134, 66, 0.2));
+            margin-bottom: 18px; /* space before ShipZen text */
+        }
+        .brand-title {
+            font-size: 56px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .tagline {
+            font-size: 20px;
+            color: var(--text-light);
+            line-height: 1.6;
+            max-width: 360px;
+            font-weight: 500;
+        }
+        /* RIGHT SIDE: AUTH CONTAINER */
+        .right-panel {
+            width: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        /* FLIP CONTAINER */
+        .flip-container {
+            perspective: 1500px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .flipper {
+            transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
+            display: grid;
+            width: 100%;
+            max-width: 550px;
+            will-change: transform;
+        }
+        .flipper.flipped {
+            transform: rotateY(180deg);
+        }
+        .front, .back {
+            grid-area: 1 / 1;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .front {
+            transform: rotateY(0deg);
+        }
+        .back {
+            transform: rotateY(180deg);
+        }
+        /* CARD CONTENT */
+        .auth-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .login-card {
+            max-width: 440px;
+        }
+
+        h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: inline-block;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+            transform: translateX(-5px);
+        }
+
+        /* FORM STYLES */
+        .form-control, .form-select, .input-group-text {
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.9);
+            font-size: 14px;
+        }
+
+        .input-group-text {
+            background: rgba(243, 243, 243, 0.8);
+            color: var(--text-light);
+            border-right: none;
+        }
+
+        .form-control { border-left: none; }
+        .form-select { border-left: 1px solid rgba(0,0,0,0.1); }
+        
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(198, 134, 66, 0.2);
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        /* Custom heights for register density */
+        .dense-input .form-control, 
+        .dense-input .form-select, 
+        .dense-input .input-group-text {
+            height: 42px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 15px 0 8px 0;
+            display: block;
+        }
+
+        /* LOGIN TYPE SWITCH */
+        .login-type {
+            display: flex;
+            background: rgba(243, 243, 243, 0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            padding: 4px;
+        }
+
+        .type-btn {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            background: transparent;
+            cursor: pointer;
+            transition: 0.3s;
+            color: var(--text-light);
+            border-radius: 8px;
+        }
+
+        .type-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(198, 134, 66, 0.2);
+        }
+
+        /* BUTTONS */
+        .btn-auth {
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(198, 134, 66, 0.2);
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(198, 134, 66, 0.3);
+            color: white;
+        }
+
+        .btn-reset {
+            background: rgba(243, 243, 243, 0.9);
+            border: none;
+            color: var(--text-dark);
+            font-weight: 600;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .btn-reset:hover {
+            background: #e2e2e2;
+        }
+
+        /* LINKS */
+        .auth-link {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-link:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .split-layout {
+                flex-direction: column;
+            }
+            .left-panel {
+                display: none;
+            }
+            .right-panel {
+                width: 100%;
+                min-height: 100vh;
+            }
+            .auth-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="split-layout">
+    
+    <!-- LEFT SIDE: BRANDING -->
+
+    <div class="left-panel">
+        <img
+            src="/logo.webp"
+            alt="ShipZen Logo"
+            class="logo-img-auth"
+        />
+        <h1 class="brand-title">ShipZen</h1>
+        <p class="tagline">Experience reliable logistics with seamless, intelligent parcel handling.</p>
+    </div>
+
+    <!-- RIGHT SIDE: AUTH CONTAINER -->
+    <div class="right-panel">
+        
+        <div class="flip-container" id="flipContainer">
+            <div class="flipper" id="flipper">
+                
+                <!-- FRONT: LOGIN CARD -->
+                <div class="front">
+                    <div class="auth-card login-card">
+                        <a th:href="@{/}" class="back-link">
+                            <i class="bi bi-arrow-left"></i> Back to Home
+                        </a>
+
+                        <div class="text-center mb-4 mt-1">
+                            <div style="width: 65px; height: 65px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: white; font-size: 32px; box-shadow: 0 10px 20px rgba(198, 134, 66, 0.2);">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <h3 class="mb-1">Welcome Back</h3>
+                            <p class="text-muted" style="font-size: 14px;">Sign in to continue to your dashboard.</p>
+                        </div>
+
+                        <!-- LOGIN TYPE SWITCH -->
+                        <div class="login-type">
+                            <button class="type-btn active" onclick="switchType('customer')" type="button">Customer</button>
+                            <button class="type-btn" onclick="switchType('admin')" type="button">Admin</button>
+                        </div>
+
+                        <form th:action="@{/login}" method="post">
+                            <!-- Server error message -->
+                            <div th:if="${error}" class="alert alert-danger py-2 mb-3" style="border-radius: 10px; font-size: 14px;" th:text="${error}"></div>
+                            <!-- Registration success message -->
+                            <div th:if="${success}" class="alert alert-success py-2 mb-3" style="border-radius: 10px; font-size: 14px;" th:text="${success}"></div>
+
+                            <div class="input-group mb-1">
+                                <span class="input-group-text" style="height: 46px;">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    name="email"
+                                    id="loginEmail"
+                                    class="form-control"
+                                    style="height: 46px;"
+                                    placeholder="Login Email"
+                                />
+                            </div>
+                            <small id="loginEmailError" class="text-danger d-block mb-3"></small>
+
+                            <div class="input-group mb-4">
+                                <span class="input-group-text" style="height: 46px;"><i class="bi bi-lock"></i></span>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    id="loginPassword"
+                                    class="form-control"
+                                    style="height: 46px;"
+                                    placeholder="Password" />
+                                <small id="loginPasswordError" class="text-danger"></small>
+                            </div>
+
+                            <button
+                                type="submit"
+                                class="btn btn-auth w-100"
+                                id="loginBtn"
+                                style="height: 48px; font-size: 16px;">
+                                Login as Customer
+                            </button>
+
+
+                            <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                                    <label class="form-check-label text-muted" for="rememberMe" style="font-size: 13px;">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <a href="#" class="auth-link" style="font-size: 13px;">Forgot Password?</a>
+                            </div>
+                            
+                        </form>
+                        
+                        <div class="text-center pt-3 mt-auto border-top" style="border-color: rgba(0,0,0,0.1) !important;">
+                            <span class="text-muted">New user?</span>
+                            <span class="auth-link ms-1" onclick="flipCard()">Create Account</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BACK: REGISTER CARD -->
+                <div class="back">
+                    <div class="auth-card">
+                        <a th:href="@{/}" class="back-link">
+                            <i class="bi bi-arrow-left"></i> Back to Home
+                        </a>
+
+                        <h3 class="mb-3 text-center">Create Account</h3>
+
+                        <form th:action="@{/register}" method="post" class="dense-input">
+                            
+                            <!-- PERSONAL -->
+                            <span class="section-title">Personal Information</span>
+                            <div class="row g-2 mb-2">
+                                <div class="col-12 col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                        <input type="text" name="customerName" class="form-control" placeholder="Customer Name" required>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                        <input type="email" name="email" id="regEmail" class="form-control" placeholder="Email Address">
+                                        <small id="regEmailError" class="text-danger"></small>                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-2 mb-2">
+                                <div class="col-4">
+                                    <select class="form-select" id="countryCodeSelect">
+                                        <option value="+91">+91 (IN)</option>
+                                        <option value="+1">+1 (US)</option>
+                                        <option value="+44">+44 (GB)</option>
+                                    </select>
+                                </div>
+                                <div class="col-8">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                                        <input type="tel" name="mobile" class="form-control" placeholder="10 digit mobile" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                <input type="text" name="address" class="form-control" placeholder="Full Address with ZIP" required>
+                            </div>
+
+                            <!-- ACCOUNT -->
+                            <span class="section-title">Account Details</span>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                <input type="text" name="userId" class="form-control" placeholder="User ID (5-20 chars)" required>
+                            </div>
+
+                            <div class="row g-2 mb-2">
+                                <div class="col-12 col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                        <input type="password" name="password" id="regPassword" class="form-control" placeholder="Password">
+                                        <small id="regPasswordError" class="text-danger"></small>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                                        <input type="password" id="regConfirmPassword" class="form-control" placeholder="Confirm Password">
+                                        <small id="regConfirmError" class="text-danger"></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PREFERENCES -->
+                            <span class="section-title">Preferences</span>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text"><i class="bi bi-sliders"></i></span>
+                                <input type="text" class="form-control" placeholder="Delivery notes, notifications...">
+                            </div>
+                            <input type="hidden" name="role" value="CUSTOMER">
+                            <!-- BUTTONS -->
+                            <div class="d-flex flex-column flex-sm-row gap-2 mt-2">
+                                <!-- <a href="login.html"   <button type="submit" class="btn btn-auth w-100">Register Now</button></a> -->
+                                 <button type="submit" class="btn btn-auth w-100">Register Now</button>
+                                <button type="reset" class="btn btn-reset w-100 py-2">Reset Fields</button>
+                            </div>
+
+                            <!-- LOGIN TOGGLE -->
+                            <div class="text-center border-top pt-3 mt-3" style="border-color: rgba(0,0,0,0.1) !important;">
+                                <span class="text-muted">Already have an account?</span>
+                                <span class="auth-link ms-1" onclick="flipCard()">Sign In</span>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Handle Switch between Customer and Admin login
+    let loginType = "customer";
+    function switchType(type) {
+        const buttons = document.querySelectorAll(".type-btn");
+        const loginBtn = document.getElementById("loginBtn");
+
+        buttons.forEach((btn) => btn.classList.remove("active"));
+
+        if (type === "customer") {
+            buttons[0].classList.add("active");
+            loginBtn.textContent = "Login as Customer";
+	    loginType = "customer";
+        } else {
+            buttons[1].classList.add("active");
+            loginBtn.textContent = "Login as Admin";
+	    loginType = "admin";
+        }
+    }
+
+// Validation regex
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+    // Handle 3D Card Flip
+    function flipCard() {
+        const flipper = document.getElementById('flipper');
+        flipper.classList.toggle('flipped');
+    }
+
+    // Fetch Country Codes dynamically
+    async function fetchCountryCodes() {
+        const select = document.getElementById('countryCodeSelect');
+        try {
+            const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,idd');
+            const data = await response.json();
+            
+            const countries = data
+                .filter(c => c.idd && c.idd.root)
+                .map(c => {
+                    const code = c.idd.root + (c.idd.suffixes && c.idd.suffixes.length === 1 ? c.idd.suffixes[0] : '');
+                    return {
+                        name: c.name.common,
+                        iso: c.cca2,
+                        code: code
+                    };
+                })
+                .sort((a, b) => a.name.localeCompare(b.name));
+            
+            let optionsHTML = '';
+            countries.forEach(country => {
+                const isSelected = country.iso === 'IN' ? 'selected' : '';
+                optionsHTML += `<option value="${country.code}" ${isSelected}>${country.code} (${country.iso})</option>`;
+            });
+            
+            select.innerHTML = optionsHTML;
+        } catch (error) {
+            console.error('Error fetching country codes:', error);
+            // Fallback is already in the HTML
+        }
+    }
+
+    // Auto-flip to register card if URL contains #register
+    window.onload = function() {
+        if(window.location.hash === '#register') {
+            document.getElementById('flipper').classList.add('flipped');
+        }
+        fetchCountryCodes();
+    }; 
+	
+// function handleLogin() {
+//     const email = document.getElementById("loginEmail").value.trim();
+//     const password = document.getElementById("loginPassword").value.trim();
+
+//     document.getElementById("loginEmailError").textContent = "";
+//     document.getElementById("loginPasswordError").textContent = "";
+
+//     let valid = true;
+
+//     if (!emailRegex.test(email)) {
+//         document.getElementById("loginEmailError").textContent =
+//             "Please enter a valid email address";
+//         valid = false;
+//     }
+
+//     if (!passwordRegex.test(password)) {
+//         document.getElementById("loginPasswordError").textContent =
+//             "Password must be 8+ characters with uppercase, lowercase, number & symbol";
+//         valid = false;
+//     }
+
+//     if (!valid) return;
+
+//     if (loginType === "customer") {
+//         localStorage.setItem("userRole", "customer");
+//         window.location.href = "CustomerHome_HTML.html";
+//     } else {
+//         localStorage.setItem("userRole", "officer");
+//         window.location.href = "OfficerHome_HTML.html";
+//     }
+// }
+
+// function handleRegister() {
+//     document.getElementById("regEmailError").textContent = "";
+//     document.getElementById("regPasswordError").textContent = "";
+//     document.getElementById("regConfirmError").textContent = "";
+
+//     let valid = true;
+
+//     if (!emailRegex.test(regEmail.value.trim())) {
+//         regEmailError.textContent = "Invalid email format";
+//         valid = false;
+//     }
+
+//     if (!passwordRegex.test(regPassword.value.trim())) {
+//         regPasswordError.textContent =
+//             "Password must be strong (A-Z, a-z, 0-9, symbol)";
+//         valid = false;
+//     }
+
+//     if (regPassword.value !== regConfirmPassword.value) {
+//         regConfirmError.textContent = "Passwords do not match";
+//         valid = false;
+//     }
+
+//     if (!valid) return;
+
+//     alert("Registration successful!");
+//     flipCard();
+// }
+
+</script>
+
+</body>
+</html>

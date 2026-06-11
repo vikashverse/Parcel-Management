@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Pickup Scheduling – ShipZen</title>
+    <link rel="stylesheet" th:href="@{/css/pickupScheduling.css}"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" th:href="@{/officer/home}">Ship<span>Zen</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#officerNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center" id="officerNav">
+            <ul class="navbar-nav gap-lg-2">
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/home}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/tracking}">Tracking</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/delivery-update}">Delivery Status</a></li>
+                <li class="nav-item"><a class="nav-link active" th:href="@{/officer/pickup-scheduling}">Pickup Scheduling</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/officer/history}">Previous Booking</a></li>
+            </ul>
+        </div>
+        <div class="user-panel">
+            <span class="welcome-text">Welcome, <strong th:text="${session.username}">Officer</strong></span>
+            <a th:href="@{/logout}" class="btn-logout" title="Logout"><i class="bi bi-box-arrow-right"></i></a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-main">
+
+    <!-- Toast messages -->
+    <div th:if="${successMsg}" class="alert alert-success d-flex align-items-center gap-2 mb-3" style="border-radius:12px">
+        <i class="bi bi-check-circle-fill"></i> <span th:text="${successMsg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-danger d-flex align-items-center gap-2 mb-3" style="border-radius:12px">
+        <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${errorMsg}"></span>
+    </div>
+
+    <!-- Step Progress -->
+    <div class="step-progress">
+        <div class="step-item">
+            <div class="step-circle" th:classappend="${booking != null ? 'done' : 'active'}" id="sc1">
+                <span th:if="${booking == null}">1</span>
+                <i th:if="${booking != null}" data-lucide="check"></i>
+            </div>
+            <div class="step-label"><div class="step-num">Step 1</div><div class="step-name">Search Booking</div></div>
+        </div>
+        <div class="step-line" th:classappend="${booking != null ? 'done' : ''}"></div>
+        <div class="step-item">
+            <div class="step-circle" th:classappend="${booking != null ? 'active' : ''}" id="sc2">2</div>
+            <div class="step-label"><div class="step-num">Step 2</div><div class="step-name">Schedule Pickup</div></div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-item">
+            <div class="step-circle" id="sc3"><i data-lucide="check"></i></div>
+            <div class="step-label"><div class="step-num">Step 3</div><div class="step-name">Confirmation</div></div>
+        </div>
+    </div>
+
+    <!-- Step 1: Search Booking -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i data-lucide="search"></i> Search Booking</div>
+            <span class="step-tag">Step 1 — Search Booking</span>
+        </div>
+        <div class="card-body">
+            <div class="search-row">
+                <div class="fg" id="fg-bs">
+                    <label for="bs">Booking ID <span class="req">*</span></label>
+                    <div class="input-wrap">
+                        <i data-lucide="hash"></i>
+                        <input type="text" id="bs" placeholder="e.g. BZ83421"
+                               th:value="${booking != null ? booking.bookingId : ''}"/>
+                    </div>
+                    <span class="em"><i data-lucide="alert-circle"></i> Please enter a Booking ID.</span>
+                </div>
+                <button class="btn-search" type="button" onclick="searchBooking()">
+                    <i data-lucide="search"></i> Search
+                </button>
+            </div>
+
+            <!-- Result box — shown when booking found from DB -->
+            <div class="result-box" th:classappend="${booking != null ? 'show' : ''}" id="result-box">
+                <div class="result-tag"><i data-lucide="check-circle-2"></i> Booking Found</div>
+                <div class="result-grid" th:if="${booking != null}">
+                    <div class="ri"><strong>Booking ID</strong><span th:text="${booking.bookingId}">—</span></div>
+                    <div class="ri"><strong>Customer</strong><span th:text="${booking.senderName}">—</span></div>
+                    <div class="ri"><strong>Contact</strong><span th:text="${booking.senderContact}">—</span></div>
+                    <div class="ri"><strong>Package</strong><span th:text="${booking.size + ' · ' + booking.weight + ' kg'}">—</span></div>
+                    <div class="ri"><strong>Origin</strong><span th:text="${booking.senderAddress}">—</span></div>
+                    <div class="ri"><strong>Status</strong><span class="spill" th:text="${booking.status}">—</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Schedule Pickup — POST to /officer/pickup-scheduling -->
+    <div class="card" th:classappend="${booking == null ? 'card-disabled' : ''}" id="sc-card">
+        <div class="card-header">
+            <div class="card-title"><i data-lucide="clipboard-list"></i> Schedule Pickup</div>
+            <span class="step-tag">Step 2 — Schedule Pickup</span>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/officer/pickup-scheduling}" method="post">
+                <div class="fg-grid">
+                    <div class="fg">
+                        <label>Booking ID</label>
+                        <div class="input-wrap">
+                            <i data-lucide="tag"></i>
+                            <input type="text" name="bookingId" readonly
+                                   th:value="${booking != null ? booking.bookingId : ''}"/>
+                        </div>
+                    </div>
+                    <div class="fg">
+                        <label>Customer Name</label>
+                        <div class="input-wrap">
+                            <i data-lucide="user"></i>
+                            <input type="text" readonly th:value="${booking != null ? booking.senderName : ''}"/>
+                        </div>
+                    </div>
+                    <div class="fg full" id="fg-addr">
+                        <label for="addr">Pickup Address <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <i data-lucide="map-pin"></i>
+                            <input id="addr" type="text" name="pickupAddress"
+                                   placeholder="Full sender address for pickup"
+                                   th:value="${booking != null ? booking.senderAddress : ''}"/>
+                        </div>
+                        <span class="em"><i data-lucide="alert-circle"></i> Pickup address is required.</span>
+                    </div>
+                    <div class="fg" id="fg-date">
+                        <label for="pdate">Pickup Date <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <i data-lucide="calendar"></i>
+                            <input id="pdate" type="date" name="pickupDate"/>
+                        </div>
+                        <span class="em"><i data-lucide="alert-circle"></i> Please select a date.</span>
+                    </div>
+                    <div class="fg" id="fg-time">
+                        <label for="ptime">Pickup Time <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <i data-lucide="clock"></i>
+                            <input id="ptime" type="time" name="pickupTime"/>
+                        </div>
+                        <span class="em"><i data-lucide="alert-circle"></i> Please select a time.</span>
+                    </div>
+                    <div class="fg" id="fg-off">
+                        <label for="offsel">Assigned Officer <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <i data-lucide="user-check"></i>
+                            <select id="offsel" name="assignedOfficer">
+                                <option value="">— Select Officer —</option>
+                                <option th:text="${session.username}" th:value="${session.username}">Current Officer</option>
+                                <option value="Arun Kumar">Arun Kumar</option>
+                                <option value="Suresh Kumar">Suresh Kumar</option>
+                                <option value="Rahul Menon">Rahul Menon</option>
+                                <option value="Anjali Das">Anjali Das</option>
+                            </select>
+                        </div>
+                        <span class="em"><i data-lucide="alert-circle"></i> Please assign an officer.</span>
+                    </div>
+                </div>
+                <div class="btn-acts">
+                    <a th:href="@{/officer/pickup-scheduling}" class="btn-cancel">
+                        <i data-lucide="x"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-save" onclick="return validateSchedule()">
+                        <i data-lucide="save"></i> Save Schedule
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script th:inline="none">
+    lucide.createIcons();
+
+    document.getElementById('pdate').min = new Date().toISOString().split('T')[0];
+
+    function searchBooking() {
+        const id = document.getElementById('bs').value.trim();
+        if (!id) { document.getElementById('fg-bs').classList.add('invalid'); return; }
+        window.location.href = '/officer/pickup-scheduling?bookingId=' + encodeURIComponent(id);
+    }
+
+    document.getElementById('bs').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); searchBooking(); }
+    });
+
+    function validateSchedule() {
+        let ok = true;
+        var fields = [['fg-addr','addr'],['fg-date','pdate'],['fg-time','ptime'],['fg-off','offsel']];
+        fields.forEach(function(pair) {
+            var g = pair[0], i = pair[1];
+            var el = document.getElementById(i);
+            var valid = el && el.value.trim();
+            document.getElementById(g).classList.toggle('invalid', !valid);
+            if (!valid) ok = false;
+        });
+        return ok;
+    }
+</script>
+</body>
+</html>

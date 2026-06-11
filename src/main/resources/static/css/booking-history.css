@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --primary:      #c68642;
+  --primary-dark: #a86e30;
+  --accent:       #f4c430;
+  --dark:         #1f2937;
+  --cream:        #fdf6e9;
+  --text-muted:   #6b7280;
+  --shadow-warm:  rgba(198, 134, 66, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: var(--cream);
+  padding-top: 70px;
+  color: var(--dark);
+  overflow-x: hidden;
+}
+
+/* ================= NAVBAR (IDENTICAL) ================= */
+.navbar-custom {
+  background: linear-gradient(90deg, #b5722e 0%, var(--primary) 55%, #d4943a 100%);
+  min-height: 70px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.2);
+}
+
+.navbar-brand {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #fff !important;
+  letter-spacing: -0.5px;
+}
+
+.navbar-brand span { color: var(--accent); }
+
+.navbar-custom .nav-link {
+  color: rgba(255,255,255,0.9) !important;
+  font-weight: 600;
+  font-size: 0.93rem;
+  border-radius: 7px;
+  padding: 0.42rem 0.95rem;
+  transition: background-color 0.2s, color 0.2s;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  will-change: background-color;
+  display: inline-block;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link.active {
+  background-color: rgba(244,196,48,0.22);
+  color: var(--accent) !important;
+  font-weight: 600;
+}
+
+/* ── USER PANEL ─────────────────────────── */
+.user-panel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.welcome-text {
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.welcome-text strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.15);
+  color: #fff !important;
+  font-size: 1.2rem;
+  text-decoration: none;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  transition: background 0.2s, transform 0.15s, border-color 0.2s;
+}
+
+.btn-logout:hover {
+  background: rgba(244,196,48,0.25);
+  border-color: var(--accent);
+  color: var(--accent) !important;
+  transform: translateX(2px);
+}
+
+
+/* ================= BOOKING HISTORY ================= */
+.history-wrapper {
+  padding: 40px 0;
+}
+
+.table-card {
+  background: white;
+  border-radius: 18px;
+  padding: 35px;
+  box-shadow: 0 8px 25px var(--shadow-warm);
+}
+
+.table-card h2 {
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 25px;
+}
+
+.booking-table th {
+  background: var(--primary);
+  color: white;
+  padding: 14px;
+}
+
+.booking-table td {
+  padding: 14px;
+}
+
+.status {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.delivered { background: #e6f4ea; color: #1f6e35; }
+.pending   { background: #fff8e1; color: #8a6d00; }
+.cancelled { background: #fdecea; color: #842029; }
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 25px;
+}
+
+.pagination-wrapper button {
+  background: var(--primary);
+  color: white;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+}
+
+.pagination-wrapper button:disabled {
+  opacity: 0.5;
+}

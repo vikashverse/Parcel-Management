@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Track Parcel | ShipZen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/CustomerTracking_CSS.css}"/>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" th:href="@{/home}">Ship<span>Zen</span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#shipzenNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center" id="shipzenNav">
+            <ul class="navbar-nav gap-lg-2">
+                <li class="nav-item"><a class="nav-link" th:href="@{/home}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/booking}">Booking Service</a></li>
+                <li class="nav-item"><a class="nav-link active" th:href="@{/tracking}">Tracking</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/history}">Previous Booking</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/support}">Contact Support</a></li>
+            </ul>
+        </div>
+        <div class="user-panel">
+            <span class="welcome-text">Welcome, <strong th:text="${session.username}">User</strong></span>
+            <a th:href="@{/logout}" class="btn-logout" title="Logout"><i class="bi bi-box-arrow-right"></i></a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-body">
+    <div class="container">
+
+        <div class="page-header text-center">
+            <div class="header-icon"><i class="bi bi-geo-alt-fill"></i></div>
+            <h2 class="page-title">Track Your Parcel</h2>
+            <p class="page-sub">Enter your Booking ID to see real-time shipment status</p>
+        </div>
+
+        <!-- Search form — navigates to /tracking/{id} -->
+        <div class="search-bar-wrap">
+            <div class="search-bar">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="bookingInput" class="search-input"
+                       placeholder="Enter Booking ID (e.g. BZ83421)"
+                       th:value="${booking != null ? booking.bookingId : searchedId}" />
+                <button class="search-btn" onclick="trackParcel()">Track</button>
+            </div>
+            <p class="search-hint"><i class="bi bi-info-circle"></i> Booking ID is shown on your invoice</p>
+        </div>
+
+        <!-- Not found message -->
+        <div th:if="${found == false}" class="alert alert-warning text-center mx-auto" style="max-width:500px;border-radius:12px">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            No booking found for ID: <strong th:text="${searchedId}">—</strong>
+        </div>
+
+        <!-- Result panel — shown when booking is found -->
+        <div class="result-panel" th:if="${booking != null}" style="display:block">
+
+            <!-- Summary card -->
+            <div class="summary-card">
+                <div class="summary-left">
+                    <div class="summary-icon"><i class="bi bi-box-seam-fill"></i></div>
+                    <div>
+                        <div class="summary-id">Booking ID: <strong th:text="${booking.bookingId}">—</strong></div>
+                        <div class="summary-route">
+                            <span class="city" th:text="${booking.senderPincode}">—</span>
+                            <i class="bi bi-arrow-right mx-2"></i>
+                            <span class="city" th:text="${booking.receiverPincode}">—</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="summary-right">
+                    <span class="status-pill"
+                          th:classappend="${booking.status == 'Delivered' ? 'delivered' : (booking.status == 'Pending' ? 'pending' : 'transit')}"
+                          th:text="${booking.status}">—</span>
+                    <div class="eta" th:if="${booking.expectedDeliveryDate != null and !booking.expectedDeliveryDate.isEmpty()}">
+                        Est. Delivery: <strong th:text="${booking.expectedDeliveryDate}">—</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline-card">
+                <h6 class="timeline-heading"><i class="bi bi-clock-history me-2"></i>Shipment Journey</h6>
+                <div class="timeline">
+
+                    <!-- Step 1: Booked — always done -->
+                    <div class="tl-step done">
+                        <div class="tl-dot"><i class="bi bi-check-lg"></i></div>
+                        <div class="tl-content">
+                            <div class="tl-title">Order Booked</div>
+                            <div class="tl-meta" th:text="${booking.bookedAtFormatted}">—</div>
+                            <div class="tl-desc">Parcel booked and awaiting pickup.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Picked Up -->
+                    <div th:with="s=${booking.status}"
+                         th:class="${s == 'Picked Up' or s == 'In Transit' or s == 'At Hub' or s == 'Out for Delivery' or s == 'Delivered'} ? 'tl-step done' : 'tl-step pending'">
+                        <div class="tl-dot"><i class="bi bi-check-lg"></i></div>
+                        <div class="tl-content">
+                            <div class="tl-title">Picked Up</div>
+                            <div class="tl-meta"
+                                 th:text="${booking.assignedOfficer != null ? 'Officer: ' + booking.assignedOfficer : 'Pending'}">—</div>
+                            <div class="tl-desc" th:text="${booking.currentLocation ?: 'Awaiting pickup'}">—</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: In Transit -->
+                    <div th:with="s=${booking.status}"
+                         th:class="${s == 'In Transit'} ? 'tl-step active' : (${s == 'At Hub' or s == 'Out for Delivery' or s == 'Delivered'} ? 'tl-step done' : 'tl-step pending')">
+                        <div class="tl-dot"><i class="bi bi-truck-front-fill"></i></div>
+                        <div class="tl-content">
+                            <div class="tl-title">In Transit</div>
+                            <div class="tl-meta" th:text="${booking.updatedAtFormatted}">—</div>
+                            <div class="tl-desc">Parcel is on the way to destination.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Out for Delivery -->
+                    <div th:with="s=${booking.status}"
+                         th:class="${s == 'Out for Delivery'} ? 'tl-step active' : (${s == 'Delivered'} ? 'tl-step done' : 'tl-step pending')">
+                        <div class="tl-dot"><i class="bi bi-house-door-fill"></i></div>
+                        <div class="tl-content">
+                            <div class="tl-title">Out for Delivery</div>
+                            <div class="tl-meta"
+                                 th:text="${booking.deliveryAgent != null ? 'Agent: ' + booking.deliveryAgent : 'Pending'}">—</div>
+                            <div class="tl-desc">Parcel dispatched to receiver's address.</div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Delivered -->
+                    <div th:class="${booking.status == 'Delivered'} ? 'tl-step done' : 'tl-step pending'">
+                        <div class="tl-dot"><i class="bi bi-patch-check-fill"></i></div>
+                        <div class="tl-content">
+                            <div class="tl-title">Delivered</div>
+                            <div class="tl-meta"
+                                 th:text="${booking.status == 'Delivered' ? booking.updatedAtFormatted : 'Pending'}">—</div>
+                            <div class="tl-desc">Parcel delivered to receiver successfully.</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Details grid -->
+            <div class="details-grid">
+                <div class="detail-box">
+                    <div class="detail-label">Sender Name</div>
+                    <div class="detail-value" th:text="${booking.senderName}">—</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Receiver Name</div>
+                    <div class="detail-value" th:text="${booking.receiverName}">—</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Receiver Address</div>
+                    <div class="detail-value" th:text="${booking.receiverAddress}">—</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Parcel Weight</div>
+                    <div class="detail-value" th:text="${booking.weight + ' kg'}">—</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Delivery Type</div>
+                    <div class="detail-value" th:text="${booking.shippingSpeed}">—</div>
+                </div>
+                <div class="detail-box">
+                    <div class="detail-label">Amount Paid</div>
+                    <div class="detail-value" th:text="'₹' + ${booking.amount}">—</div>
+                </div>
+            </div>
+
+        </div><!-- /result-panel -->
+
+    </div>
+</div>
+
+<script>
+    function trackParcel() {
+        const id = document.getElementById('bookingInput').value.trim();
+        if (!id) { alert('Please enter a Booking ID.'); return; }
+        window.location.href = '/tracking/' + encodeURIComponent(id);
+    }
+    document.getElementById('bookingInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') trackParcel();
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

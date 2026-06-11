@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment - ShipZen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/payment.css}" />
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="top-bar">
+            <div id="welcomeText">Welcome, <span th:text="${session.username}">User</span></div>
+            <button onclick="goBack()">Back</button>
+        </div>
+
+        <h2>Payment Page</h2>
+
+        <label>Bill Amount</label>
+        <input type="text" id="amount" class="readonly" readonly
+               th:value="${booking != null ? '₹' + booking.amount : '₹0'}" />
+
+        <label>Mode of Payment</label>
+        <select id="mode">
+            <option value="">Select</option>
+            <option value="debit">Debit Card</option>
+            <option value="credit">Credit Card</option>
+        </select>
+        <div class="error" id="modeErr"></div>
+        <br />
+        <button onclick="goToCard()">Pay Now</button>
+        <button onclick="goBack()">Back to Home</button>
+
+        <hr />
+
+        <h3>Enter Card Details</h3>
+
+        <label>Card Number</label>
+        <input type="text" id="cardNo" maxlength="16" />
+        <div class="error" id="cardErr"></div>
+
+        <label>Card Holder Name</label>
+        <input type="text" id="holder" />
+        <div class="error" id="holderErr"></div>
+
+        <label>Expiry Date (MM/YY)</label>
+        <input type="text" id="expiry" placeholder="MM/YY" />
+        <div class="error" id="expiryErr"></div>
+
+        <label>CVV</label>
+        <input type="password" id="cvv" maxlength="3" />
+        <div class="error" id="cvvErr"></div>
+        <br />
+
+        <!-- Hidden form that submits to server on payment success -->
+        <form id="confirmForm" th:action="@{/payment/confirm}" method="post" style="display:inline">
+            <button type="button" onclick="makePayment()">Make Payment</button>
+        </form>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function goBack() {
+            const role = /*[(${session.role})]*/ '';
+            if (role === 'OFFICER') {
+                window.location.href = '/officer/booking';
+            } else {
+                window.location.href = '/booking';
+            }
+        }
+
+        function goToCard() {
+            const mode = document.getElementById("mode").value;
+            document.getElementById("modeErr").innerText = "";
+            if (!mode) {
+                document.getElementById("modeErr").innerText = "Select payment mode";
+            } else {
+                alert("Enter card details below");
+            }
+        }
+
+        function makePayment() {
+            let valid = true;
+
+            function setError(id, msg) {
+                document.getElementById(id).innerText = msg;
+                valid = false;
+            }
+
+            document.querySelectorAll(".error").forEach((el) => (el.innerText = ""));
+
+            const cardNo = document.getElementById("cardNo").value.trim();
+            const holder = document.getElementById("holder").value.trim();
+            const expiry = document.getElementById("expiry").value.trim();
+            const cvv    = document.getElementById("cvv").value.trim();
+
+            if (cardNo.length !== 16 || isNaN(cardNo))
+                setError("cardErr", "Enter valid 16-digit card number");
+            if (!holder)
+                setError("holderErr", "Enter card holder name");
+            if (!/^\d{2}\/\d{2}$/.test(expiry))
+                setError("expiryErr", "Format MM/YY");
+            if (cvv.length !== 3 || isNaN(cvv))
+                setError("cvvErr", "Enter valid CVV");
+
+            if (valid) {
+                Swal.fire({
+                    title: 'Payment Successful!',
+                    text: 'Parcel Booked Successfully.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                setTimeout(() => {
+                    document.getElementById("confirmForm").submit();
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>
